@@ -98,6 +98,37 @@ void caml_garbage_collection(void)
                             nallocs, alloc_len);
 }
 
+void caml_poll(void)
+{
+  frame_descr* d;
+  intnat allocsz = 0, i, nallocs;
+  unsigned char* alloc_len;
+
+  { /* Find the frame descriptor for the current allocation */
+    uintnat h = Hash_retaddr(Caml_state->last_return_address);
+    while (1) {
+      d = caml_frame_descriptors[h];
+      if (d->retaddr == Caml_state->last_return_address) break;
+      h = (h + 1) & caml_frame_descriptors_mask;
+    }
+    /* Must be an allocation frame */
+    CAMLassert(d && d->frame_size != 0xFFFF && (d->frame_size & 2));
+  }
+
+  /* Compute the total allocation size at this point,
+     including allocations combined by Comballoc */
+  alloc_len = (unsigned char*)(&d->live_ofs[d->num_live]);
+  nallocs = *alloc_len++;
+  for (i = 0; i < nallocs; i++) {
+    allocsz += Whsize_wosize(Wosize_encoded_alloc_len(alloc_len[i]));
+  }
+  /* We have computed whsize (including header), but need wosize (without) */
+  allocsz -= 1;
+
+  caml_alloc_small_dispatch(-1, CAML_DO_TRACK | CAML_FROM_CAML,
+                            nallocs, alloc_len);
+}
+
 DECLARE_SIGNAL_HANDLER(handle_signal)
 {
   int saved_errno;
