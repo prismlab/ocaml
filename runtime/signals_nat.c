@@ -100,33 +100,38 @@ void caml_garbage_collection(void)
 
 void caml_poll(void)
 {
-  frame_descr* d;
-  intnat allocsz = 0, i, nallocs;
-  unsigned char* alloc_len;
+  int flags = CAML_FROM_CAML | CAML_DO_TRACK;
 
-  { /* Find the frame descriptor for the current allocation */
-    uintnat h = Hash_retaddr(Caml_state->last_return_address);
-    while (1) {
-      d = caml_frame_descriptors[h];
-      if (d->retaddr == Caml_state->last_return_address) break;
-      h = (h + 1) & caml_frame_descriptors_mask;
+  while(1) {
+    /* We might be here because of an async callback / urgent GC
+       request. Take the opportunity to do what has been requested. */
+    if (flags & CAML_FROM_CAML)
+      /* In the case of allocations performed from OCaml, execute
+         asynchronous callbacks. */
+      caml_raise_if_exception(caml_do_pending_actions_exn ());
+    else {
+      caml_check_urgent_gc (Val_unit);
+      /* In the case of long-running C code that regularly polls with
+         caml_process_pending_actions, force a query of all callbacks
+         at every minor collection or major slice. */
+      caml_something_to_do = 1;
     }
-    /* Must be an allocation frame */
-    CAMLassert(d && d->frame_size != 0xFFFF && (d->frame_size & 2));
+
+    /* Now, there might be enough room in the minor heap to do our
+       allocation. */
+    if (Caml_state->young_ptr >= Caml_state->young_trigger)
+      break;
+
+    /* If not, then empty the minor heap, and check again for async
+       callbacks. */
+    CAML_INSTR_INT ("force_minor/alloc_small@", 1);
+    caml_gc_dispatch ();
   }
 
-  /* Compute the total allocation size at this point,
-     including allocations combined by Comballoc */
-  alloc_len = (unsigned char*)(&d->live_ofs[d->num_live]);
-  nallocs = *alloc_len++;
-  for (i = 0; i < nallocs; i++) {
-    allocsz += Whsize_wosize(Wosize_encoded_alloc_len(alloc_len[i]));
+  /* Check if the allocated block has been sampled by memprof. */
+  if(Caml_state->young_ptr < caml_memprof_young_trigger){
+    caml_memprof_renew_minor_sample();
   }
-  /* We have computed whsize (including header), but need wosize (without) */
-  allocsz -= 1;
-
-  caml_alloc_small_dispatch(-1, CAML_DO_TRACK | CAML_FROM_CAML,
-                            nallocs, alloc_len);
 }
 
 DECLARE_SIGNAL_HANDLER(handle_signal)
