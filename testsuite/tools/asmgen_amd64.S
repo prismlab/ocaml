@@ -24,11 +24,13 @@
 #define CAML_C_CALL _caml_c_call
 #define CAML_NEGF_MASK _caml_negf_mask
 #define CAML_ABSF_MASK _caml_absf_mask
+#define CAML_POLL _caml_poll
 #else
 #define CALL_GEN_CODE call_gen_code
 #define CAML_C_CALL caml_c_call
 #define CAML_NEGF_MASK caml_negf_mask
 #define CAML_ABSF_MASK caml_absf_mask
+#define CAML_CALL_POLL caml_call_poll
 #endif
 
         .globl  CALL_GEN_CODE
@@ -74,6 +76,10 @@ CAML_NEGF_MASK:
         .align  ALIGN
 CAML_ABSF_MASK:
         .quad   0x7FFFFFFFFFFFFFFF, 0
+        .globl CAML_CALL_POLL
+        .align ALIGN
+CAML_CALL_POLL:
+        nop
 
         .comm   young_limit, 8
 
