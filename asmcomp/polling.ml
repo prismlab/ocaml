@@ -40,7 +40,7 @@ let rec insert_poll_aux delta instr =
         | Iop (Ialloc _) ->
             { instr with next = (insert_poll_aux delta instr.next) }
 
-        (* | Iop (Imove) -> *)
+        (* | Iop (Imove) *)
         (* | Iop (Ispill) *)
         (* | Iop (Ireload) *)
 
@@ -55,8 +55,8 @@ let rec insert_poll_aux delta instr =
         | Iop (Istackoffset _)
         (* | Iop (Iload _) *)
         (* | Iop (Istore _) *)
-        (* | Iop (Iintop _) *)
-        (* | Iop (Iintop_imm _) *)
+        (* | Iop (Iintop _) (* signal_alloc.ml *) *)
+        | Iop (Iintop_imm _)
         | Iop (Inegf)
         | Iop (Iabsf)
         | Iop (Iaddf)
