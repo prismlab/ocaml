@@ -43,6 +43,15 @@ let rec insert_poll_aux delta instr =
         (* | Iop (Imove) *)
         (* | Iop (Ispill) *)
         (* | Iop (Ireload) *)
+        (*
+        ->
+            if (instr.Mach.arg.(0).loc = instr.Mach.res.(0).loc) then begin
+                { instr with next = (insert_poll_aux delta instr.next) }
+            end else begin
+                let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
+                insert_poll_instr updated_instr
+            end
+        *)
 
         | Iop (Iconst_int _)
         | Iop (Iconst_float _)
@@ -63,7 +72,6 @@ let rec insert_poll_aux delta instr =
         | Iop (Idivf)
         | Iop (Ifloatofint)
         | Iop (Iintoffloat)
-        (* | Iop (Ispecific _) *)
         | Iop (Iname_for_debugger _)
         ->
             let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
@@ -84,6 +92,13 @@ let rec insert_poll_aux delta instr =
             end else begin
                 { instr with next = (insert_poll_aux delta instr.next) }
             end
+        | Iop (Ispecific (Istore_int _)) ->
+            { instr with next = (insert_poll_aux delta instr.next) }
+        (* signal_alloc failing
+        | Iop (Ispecific _) ->
+            let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
+            insert_poll_instr updated_instr
+        *)
         | Iop (Ipoll) ->
             assert false
         (* pass through - temp until all instructions handled *)
