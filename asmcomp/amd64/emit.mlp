@@ -723,7 +723,7 @@ let emit_instr fallthrough i =
       I.cmp (arg i 1) (arg i 0);
       I.set (cond cmp) al;
       I.movzx al (res i 0)
-  | Lop(Iintop_imm(Icomp cmp, n)) ->
+  | Lop(Iintop_imm(Icomp cmp, n, _)) ->
       I.cmp (int n) (arg i 0);
       I.set (cond cmp) al;
       I.movzx al (res i 0)
@@ -735,7 +735,7 @@ let emit_instr fallthrough i =
       let lbl = bound_error_label ?label:label_after_error i.dbg ~spacetime in
       I.cmp (arg i 1) (arg i 0);
       I.jbe (label lbl)
-  | Lop(Iintop_imm(Icheckbound { label_after_error; spacetime_index; }, n)) ->
+  | Lop(Iintop_imm(Icheckbound { label_after_error; spacetime_index; }, n, _)) ->
       let spacetime =
         if not Config.spacetime then None
         else Some (arg i 1, spacetime_index)
@@ -754,13 +754,13 @@ let emit_instr fallthrough i =
   | Lop(Iintop op) ->
       (* We have i.arg.(0) = i.res.(0) *)
       instr_for_intop op (arg i 1) (res i 0)
-  | Lop(Iintop_imm(Iadd, n)) when i.arg.(0).loc <> i.res.(0).loc ->
+  | Lop(Iintop_imm(Iadd, n, _)) when i.arg.(0).loc <> i.res.(0).loc ->
       I.lea (mem64 NONE n (arg64 i 0)) (res i 0)
-  | Lop(Iintop_imm(Iadd, 1) | Iintop_imm(Isub, -1)) ->
+  | Lop(Iintop_imm(Iadd, 1, _) | Iintop_imm(Isub, -1, _)) ->
       I.inc (res i 0)
-  | Lop(Iintop_imm(Iadd, -1) | Iintop_imm(Isub, 1)) ->
+  | Lop(Iintop_imm(Iadd, -1, _) | Iintop_imm(Isub, 1, _)) ->
       I.dec (res i 0)
-  | Lop(Iintop_imm(op, n)) ->
+  | Lop(Iintop_imm(op, n, _)) ->
       (* We have i.arg.(0) = i.res.(0) *)
       instr_for_intop op (int n) (res i 0)
   | Lop(Inegf) ->

@@ -54,9 +54,7 @@ let rec insert_poll_aux delta instr =
         (* | Iop (Iextcall _) *)
         | Iop (Istackoffset _)
         (* | Iop (Iload _) *)
-        (* | Iop (Istore _) *)
         (* | Iop (Iintop _) (* signal_alloc.ml *) *)
-        (* | Iop (Iintop_imm _) *)
         | Iop (Inegf)
         | Iop (Iabsf)
         | Iop (Iaddf)
@@ -70,6 +68,22 @@ let rec insert_poll_aux delta instr =
         ->
             let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
             insert_poll_instr updated_instr
+        
+        (* other *)
+        (* | Iop (Iintop_imm (_, _, is_addr_upd)) -> (* signals_alloc failing *)
+            if (is_addr_upd) then begin
+                { instr with next = (insert_poll_aux delta instr.next) }
+            end else begin
+                let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
+                insert_poll_instr updated_instr
+            end *)
+        | Iop (Istore (_, _, is_assign)) ->
+            if (is_assign) then begin
+                let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
+                insert_poll_instr updated_instr
+            end else begin
+                { instr with next = (insert_poll_aux delta instr.next) }
+            end
         | Iop (Ipoll) ->
             assert false
         (* pass through - temp until all instructions handled *)

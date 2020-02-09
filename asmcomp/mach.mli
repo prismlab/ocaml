@@ -67,7 +67,7 @@ type operation =
     (** For Spacetime only, Ialloc instructions take one argument, being the
         pointer to the trie node for the current function. *)
   | Iintop of integer_operation
-  | Iintop_imm of integer_operation * int
+  | Iintop_imm of integer_operation * int * bool
   | Inegf | Iabsf | Iaddf | Isubf | Imulf | Idivf
   | Ifloatofint | Iintoffloat
   | Ispecific of Arch.specific_operation

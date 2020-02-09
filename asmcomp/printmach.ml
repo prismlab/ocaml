@@ -147,7 +147,7 @@ let operation op arg ppf res =
       fprintf ppf "(spacetime node = %a)" reg arg.(0)
     end
   | Iintop(op) -> fprintf ppf "%a%s%a" reg arg.(0) (intop op) reg arg.(1)
-  | Iintop_imm(op, n) -> fprintf ppf "%a%s%i" reg arg.(0) (intop op) n
+  | Iintop_imm(op, n, _) -> fprintf ppf "%a%s%i" reg arg.(0) (intop op) n
   | Inegf -> fprintf ppf "-f %a" reg arg.(0)
   | Iabsf -> fprintf ppf "absf %a" reg arg.(0)
   | Iaddf -> fprintf ppf "%a +f %a" reg arg.(0) reg arg.(1)

@@ -400,7 +400,7 @@ method mark_instr = function
       self#mark_tailcall
   | Iop (Ialloc _) ->
       self#mark_call (* caml_alloc*, caml_garbage_collection *)
-  | Iop (Iintop (Icheckbound _) | Iintop_imm(Icheckbound _, _)) ->
+  | Iop (Iintop (Icheckbound _) | Iintop_imm(Icheckbound _, _, _)) ->
       self#mark_c_tailcall (* caml_ml_array_bound_error *)
   | Iraise raise_kind ->
     begin match raise_kind with
@@ -493,39 +493,39 @@ method select_operation op args _dbg =
 
 method private select_arith_comm op = function
     [arg; Cconst_int (n, _)] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | [arg; Cconst_pointer (n, _)] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | [Cconst_int (n, _); arg] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | [Cconst_pointer (n, _); arg] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | args ->
       (Iintop op, args)
 
 method private select_arith op = function
     [arg; Cconst_int (n, _)] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | [arg; Cconst_pointer (n, _)] when self#is_immediate n ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | args ->
       (Iintop op, args)
 
 method private select_shift op = function
     [arg; Cconst_int (n, _)] when n >= 0 && n < Arch.size_int * 8 ->
-      (Iintop_imm(op, n), [arg])
+      (Iintop_imm(op, n, false), [arg])
   | args ->
       (Iintop op, args)
 
 method private select_arith_comp cmp = function
     [arg; Cconst_int (n, _)] when self#is_immediate n ->
-      (Iintop_imm(Icomp cmp, n), [arg])
+      (Iintop_imm(Icomp cmp, n, false), [arg])
   | [arg; Cconst_pointer (n, _)] when self#is_immediate n ->
-      (Iintop_imm(Icomp cmp, n), [arg])
+      (Iintop_imm(Icomp cmp, n, false), [arg])
   | [Cconst_int (n, _); arg] when self#is_immediate n ->
-      (Iintop_imm(Icomp(swap_intcomp cmp), n), [arg])
+      (Iintop_imm(Icomp(swap_intcomp cmp), n, false), [arg])
   | [Cconst_pointer (n, _); arg] when self#is_immediate n ->
-      (Iintop_imm(Icomp(swap_intcomp cmp), n), [arg])
+      (Iintop_imm(Icomp(swap_intcomp cmp), n, false), [arg])
   | args ->
       (Iintop(Icomp cmp), args)
 

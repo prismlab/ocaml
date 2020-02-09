@@ -70,12 +70,12 @@ method! reload_operation op arg res =
       if stackp arg.(0) && stackp arg.(1)
       then ([|arg.(0); self#makereg arg.(1)|], res)
       else (arg, res)
-  | Iintop_imm(Iadd, _) when arg.(0).loc <> res.(0).loc ->
+  | Iintop_imm(Iadd, _, _) when arg.(0).loc <> res.(0).loc ->
       (* This add will be turned into a lea; args and results must be
          in registers *)
       super#reload_operation op arg res
   | Iintop(Imulh | Idiv | Imod | Ilsl | Ilsr | Iasr)
-  | Iintop_imm(_, _) ->
+  | Iintop_imm(_, _, _) ->
       (* The argument(s) and results can be either in register or on stack *)
       (* Note: Imulh, Idiv, Imod: arg(0) and res(0) already forced in regs
                Ilsl, Ilsr, Iasr: arg(1) already forced in regs *)

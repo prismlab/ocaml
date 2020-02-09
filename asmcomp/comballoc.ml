@@ -40,7 +40,7 @@ let rec combine i allocstate =
              (Pending_alloc { reg = i.res.(0);
                               dbginfos = dbginfo @ dbginfos;
                               totalsz = totalsz + sz }) in
-         (instr_cons_debug (Iop(Iintop_imm(Iadd, -sz)))
+         (instr_cons_debug (Iop(Iintop_imm(Iadd, -sz, true)))
             [| reg |] i.res i.dbg next,
            state)
       | No_alloc | Pending_alloc _ ->
@@ -56,7 +56,7 @@ let rec combine i allocstate =
          let next =
            let offset = totalsz - sz in
            if offset = 0 then next
-           else instr_cons_debug (Iop(Iintop_imm(Iadd, offset))) i.res
+           else instr_cons_debug (Iop(Iintop_imm(Iadd, offset, true))) i.res
                 i.res i.dbg next
          in
          (instr_cons_debug (Iop(Ialloc {bytes = totalsz; spacetime_index = 0;
