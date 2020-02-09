@@ -56,7 +56,7 @@ let rec insert_poll_aux delta instr =
         (* | Iop (Iload _) *)
         (* | Iop (Istore _) *)
         (* | Iop (Iintop _) (* signal_alloc.ml *) *)
-        | Iop (Iintop_imm _)
+        (* | Iop (Iintop_imm _) *)
         | Iop (Inegf)
         | Iop (Iabsf)
         | Iop (Iaddf)
