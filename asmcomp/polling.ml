@@ -24,8 +24,8 @@ let insert_poll_instr instr =
       res = [||];
       dbg = Debuginfo.none;
       live = instr.live;
-      available_before = Reg_availability_set.Ok Reg_with_debug_info.Set.empty;
-      available_across = None;
+      available_before = instr.available_before;
+      available_across = instr.available_across;
     }
 
 let rec insert_poll_aux delta instr =
