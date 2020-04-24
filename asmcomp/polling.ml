@@ -26,6 +26,7 @@ let insert_poll_instr instr =
       live = instr.live;
       available_before = instr.available_before;
       available_across = instr.available_across;
+      head = true
     }
 
 let rec insert_poll_aux delta instr =
@@ -40,10 +41,9 @@ let rec insert_poll_aux delta instr =
         | Iop (Ialloc _) ->
             { instr with next = (insert_poll_aux delta instr.next) }
 
-        (* | Iop (Imove) *)
-        (* | Iop (Ispill) *)
-        (* | Iop (Ireload) *)
-        (*
+        | Iop (Imove)
+        | Iop (Ispill)
+        | Iop (Ireload)
         ->
             if (instr.Mach.arg.(0).loc = instr.Mach.res.(0).loc) then begin
                 { instr with next = (insert_poll_aux delta instr.next) }
@@ -51,19 +51,17 @@ let rec insert_poll_aux delta instr =
                 let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
                 insert_poll_instr updated_instr
             end
-        *)
-
         | Iop (Iconst_int _)
         | Iop (Iconst_float _)
         | Iop (Iconst_symbol _)
         | Iop (Icall_ind _)
-        (* | Iop (Icall_imm _) *)
-        (* | Iop (Itailcall_ind _) *)
-        (* | Iop (Itailcall_imm _) *)
-        (* | Iop (Iextcall _) *)
+        | Iop (Icall_imm _)
+        | Iop (Itailcall_ind _)
+        | Iop (Itailcall_imm _)
+        | Iop (Iextcall _)
         | Iop (Istackoffset _)
-        (* | Iop (Iload _) *)
-        (* | Iop (Iintop _) (* signal_alloc.ml *) *)
+        | Iop (Iload _)
+        | Iop (Iintop _) (* signal_alloc.ml *)
         | Iop (Inegf)
         | Iop (Iabsf)
         | Iop (Iaddf)
@@ -76,15 +74,13 @@ let rec insert_poll_aux delta instr =
         ->
             let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
             insert_poll_instr updated_instr
-        
-        (* other *)
-        (* | Iop (Iintop_imm (_, _, is_addr_upd)) -> (* signals_alloc failing *)
+        | Iop (Iintop_imm (_, _, is_addr_upd)) ->
             if (is_addr_upd) then begin
                 { instr with next = (insert_poll_aux delta instr.next) }
             end else begin
                 let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
                 insert_poll_instr updated_instr
-            end *)
+            end
         | Iop (Istore (_, _, is_assign)) ->
             if (is_assign) then begin
                 let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
@@ -94,15 +90,11 @@ let rec insert_poll_aux delta instr =
             end
         | Iop (Ispecific (Istore_int _)) ->
             { instr with next = (insert_poll_aux delta instr.next) }
-        (* signal_alloc failing
         | Iop (Ispecific _) ->
             let updated_instr = { instr with next = insert_poll_aux delta instr.next} in
             insert_poll_instr updated_instr
-        *)
         | Iop (Ipoll) ->
             assert false
-        (* pass through - temp until all instructions handled *)
-        | _ -> { instr with next = (insert_poll_aux delta instr.next) }
     end
 
 let insert_poll fun_body =

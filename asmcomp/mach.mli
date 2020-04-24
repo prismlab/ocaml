@@ -90,6 +90,7 @@ type instruction =
     mutable live: Reg.Set.t;
     mutable available_before: Reg_availability_set.t;
     mutable available_across: Reg_availability_set.t option;
+    head: bool
   }
 
 and instruction_desc =
@@ -130,11 +131,11 @@ type fundecl =
 val dummy_instr: instruction
 val end_instr: unit -> instruction
 val instr_cons:
-      instruction_desc -> Reg.t array -> Reg.t array -> instruction ->
+      instruction_desc -> Reg.t array -> Reg.t array -> instruction -> bool ->
         instruction
 val instr_cons_debug:
       instruction_desc -> Reg.t array -> Reg.t array -> Debuginfo.t ->
-        instruction -> instruction
+        instruction -> bool -> instruction
 val instr_iter: (instruction -> unit) -> instruction -> unit
 
 val spacetime_node_hole_pointer_is_live_before : instruction -> bool

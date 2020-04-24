@@ -41,7 +41,7 @@ let rec combine i allocstate =
                               dbginfos = dbginfo @ dbginfos;
                               totalsz = totalsz + sz }) in
          (instr_cons_debug (Iop(Iintop_imm(Iadd, -sz, true)))
-            [| reg |] i.res i.dbg next,
+            [| reg |] i.res i.dbg next true,
            state)
       | No_alloc | Pending_alloc _ ->
          let (next, state) =
@@ -57,20 +57,20 @@ let rec combine i allocstate =
            let offset = totalsz - sz in
            if offset = 0 then next
            else instr_cons_debug (Iop(Iintop_imm(Iadd, offset, true))) i.res
-                i.res i.dbg next
+                i.res i.dbg next true
          in
          (instr_cons_debug (Iop(Ialloc {bytes = totalsz; spacetime_index = 0;
                                         dbginfo; label_after_call_gc = None; }))
-          i.arg i.res i.dbg next, allocstate)
+          i.arg i.res i.dbg next true, allocstate)
       end
   | Iop(Icall_ind _ | Icall_imm _ | Iextcall _ |
         Itailcall_ind _ | Itailcall_imm _) ->
       let newnext = combine_restart i.next in
-      (instr_cons_debug i.desc i.arg i.res i.dbg newnext,
+      (instr_cons_debug i.desc i.arg i.res i.dbg newnext true,
        allocstate)
   | Iop _ ->
       let (newnext, s') = combine i.next allocstate in
-      (instr_cons_debug i.desc i.arg i.res i.dbg newnext, s')
+      (instr_cons_debug i.desc i.arg i.res i.dbg newnext true, s')
   | Iifthenelse(test, ifso, ifnot) ->
       let newifso = combine_restart ifso in
       let newifnot = combine_restart ifnot in

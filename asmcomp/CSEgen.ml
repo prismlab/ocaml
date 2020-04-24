@@ -201,7 +201,7 @@ let kill_addr_regs n =
 
 (* Prepend a set of moves before [i] to assign [srcs] to [dsts].  *)
 
-let insert_single_move i src dst = instr_cons (Iop Imove) [|src|] [|dst|] i
+let insert_single_move i src dst = instr_cons (Iop Imove) [|src|] [|dst|] i true
 
 let insert_move srcs dsts i =
   match Array.length srcs with

@@ -74,6 +74,7 @@ type instruction =
     mutable live: Reg.Set.t;
     mutable available_before: Reg_availability_set.t;
     mutable available_across: Reg_availability_set.t option;
+    head: bool
   }
 
 and instruction_desc =
@@ -114,6 +115,7 @@ let rec dummy_instr =
     live = Reg.Set.empty;
     available_before = Reg_availability_set.Ok Reg_with_debug_info.Set.empty;
     available_across = None;
+    head = true
   }
 
 let end_instr () =
@@ -125,19 +127,22 @@ let end_instr () =
     live = Reg.Set.empty;
     available_before = Reg_availability_set.Ok Reg_with_debug_info.Set.empty;
     available_across = None;
+    head = true
   }
 
-let instr_cons d a r n =
+let instr_cons d a r n h =
   { desc = d; next = n; arg = a; res = r;
     dbg = Debuginfo.none; live = Reg.Set.empty;
     available_before = Reg_availability_set.Ok Reg_with_debug_info.Set.empty;
     available_across = None;
+    head = h
   }
 
-let instr_cons_debug d a r dbg n =
+let instr_cons_debug d a r dbg n h =
   { desc = d; next = n; arg = a; res = r; dbg = dbg; live = Reg.Set.empty;
     available_before = Reg_availability_set.Ok Reg_with_debug_info.Set.empty;
     available_across = None;
+    head = h
   }
 
 let rec instr_iter f i =
